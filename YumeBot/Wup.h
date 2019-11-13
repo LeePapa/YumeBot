@@ -164,8 +164,8 @@ namespace YumeBot::Jce::Wup
 
 		bool Remove(UsingString const& name);
 
-		void Encode(Cafe::Io::OutputStream* stream) const;
-		void Decode(Cafe::Io::InputStream* stream);
+		void Encode(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream) const;
+		void Decode(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream);
 
 	private:
 		std::unordered_map<UsingString, std::unordered_map<UsingString, std::vector<std::byte>>> m_Data;
@@ -176,8 +176,8 @@ namespace YumeBot::Jce::Wup
 	public:
 		UniPacket();
 
-		void Encode(Cafe::Io::OutputStream* stream);
-		void Decode(Cafe::Io::InputStream* stream);
+		void Encode(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream);
+		void Decode(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream);
 
 		UniPacket CreateResponse();
 		void CreateOldRespEncode(JceOutputStream& os);

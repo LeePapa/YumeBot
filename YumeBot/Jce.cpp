@@ -8,12 +8,13 @@ JceStruct::~JceStruct()
 {
 }
 
-JceInputStream::JceInputStream(Cafe::Io::InputStream* stream)
+JceInputStream::JceInputStream(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream)
     : m_Reader{ stream, std::endian::little }
 {
 }
 
-Cafe::Io::BinaryReader& JceInputStream::GetReader() noexcept
+Cafe::Io::BinaryReader<Cafe::Io::SeekableStream<Cafe::Io::InputStream>>&
+JceInputStream::GetReader() noexcept
 {
 	return m_Reader;
 }
@@ -39,8 +40,7 @@ std::pair<HeadData, std::size_t> JceInputStream::ReadHead() const
 
 std::pair<HeadData, std::size_t> JceInputStream::PeekHead() const
 {
-	const auto underlyingStream = dynamic_cast<Cafe::Io::SeekableStreamBase*>(m_Reader.GetStream());
-	assert(underlyingStream);
+	const auto underlyingStream = m_Reader.GetStream();
 	const auto pos = underlyingStream->GetPosition();
 	const auto head = ReadHead();
 	underlyingStream->SeekFromBegin(pos);
@@ -438,12 +438,13 @@ bool JceInputStream::doRead(std::uint32_t tag, gsl::span<std::byte> const& value
 	return false;
 }
 
-JceOutputStream::JceOutputStream(Cafe::Io::OutputStream* stream)
+JceOutputStream::JceOutputStream(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream)
     : m_Writer{ stream, std::endian::little }
 {
 }
 
-Cafe::Io::BinaryWriter& JceOutputStream::GetWriter() noexcept
+Cafe::Io::BinaryWriter<Cafe::Io::SeekableStream<Cafe::Io::OutputStream>>&
+JceOutputStream::GetWriter() noexcept
 {
 	return m_Writer;
 }

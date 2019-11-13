@@ -93,9 +93,10 @@ namespace YumeBot::Jce
 	class JceInputStream
 	{
 	public:
-		explicit JceInputStream(Cafe::Io::InputStream* stream);
+		explicit JceInputStream(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream);
 
-		[[nodiscard]] Cafe::Io::BinaryReader& GetReader() noexcept;
+		[[nodiscard]] Cafe::Io::BinaryReader<Cafe::Io::SeekableStream<Cafe::Io::InputStream>>&
+		GetReader() noexcept;
 
 		std::pair<HeadData, std::size_t> ReadHead() const;
 		std::pair<HeadData, std::size_t> PeekHead() const;
@@ -118,9 +119,7 @@ namespace YumeBot::Jce
 		template <typename T>
 		[[nodiscard]] bool Read(std::uint32_t tag, T& value, Detail::NoneType = Detail::None)
 		{
-			const auto underlyingStream =
-			    dynamic_cast<Cafe::Io::SeekableStreamBase*>(m_Reader.GetStream());
-			assert(underlyingStream);
+			const auto underlyingStream = m_Reader.GetStream();
 			const auto currentPos = underlyingStream->GetPosition();
 			CAFE_SCOPE_FAIL
 			{
@@ -159,7 +158,7 @@ namespace YumeBot::Jce
 		}
 
 	private:
-		Cafe::Io::BinaryReader m_Reader;
+		Cafe::Io::BinaryReader<Cafe::Io::SeekableStream<Cafe::Io::InputStream>> m_Reader;
 
 		bool doRead(std::uint32_t tag, std::uint8_t& value);
 		bool doRead(std::uint32_t tag, std::byte& value);
@@ -380,9 +379,10 @@ namespace YumeBot::Jce
 	class JceOutputStream
 	{
 	public:
-		explicit JceOutputStream(Cafe::Io::OutputStream* stream);
+		explicit JceOutputStream(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream);
 
-		[[nodiscard]] Cafe::Io::BinaryWriter& GetWriter() noexcept;
+		[[nodiscard]] Cafe::Io::BinaryWriter<Cafe::Io::SeekableStream<Cafe::Io::OutputStream>>&
+		GetWriter() noexcept;
 
 		void WriteHead(HeadData head);
 
@@ -411,7 +411,7 @@ namespace YumeBot::Jce
 		}
 
 	private:
-		Cafe::Io::BinaryWriter m_Writer;
+		Cafe::Io::BinaryWriter<Cafe::Io::SeekableStream<Cafe::Io::OutputStream>> m_Writer;
 
 		void doWrite(std::uint32_t tag, std::uint8_t value);
 		void doWrite(std::uint32_t tag, std::byte value);

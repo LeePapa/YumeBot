@@ -12,7 +12,7 @@ namespace YumeBot
 	constexpr std::uint32_t DefualtSigSrc = 1;
 	constexpr std::uint32_t DefaultBitmap = 0x7F7C;
 	constexpr std::uint32_t DefaultGetSig = 0x10400;
-	constexpr std::uint32_t DefaultGetSig1 = 0x1E1060;
+	constexpr std::uint32_t DefaultGetSig1 = 0x1E10E0;
 
 	constexpr UsingStringView DefaultDomains[]{ CAFE_UTF8_SV("game.qq.com") };
 
@@ -20,7 +20,7 @@ namespace YumeBot
 	{
 		std::uint8_t Content[4]{};
 
-		constexpr bool IsUnspecified() const noexcept
+		[[nodiscard]] constexpr bool IsUnspecified() const noexcept
 		{
 			for (auto item : Content)
 			{
@@ -58,6 +58,7 @@ namespace YumeBot
 		Vpn = 17
 	};
 
+	constexpr auto DefaultApkId = CAFE_UTF8_SV("com.tencent.mobileqq");
 	constexpr auto DefaultApkVersion = CAFE_UTF8_SV("5.0.0");
 
 	constexpr std::uint16_t DefaultClientVersion = 8001;

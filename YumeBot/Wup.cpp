@@ -20,13 +20,13 @@ bool OldUniAttribute::Remove(UsingString const& name)
 	return !!m_Data.erase(name);
 }
 
-void OldUniAttribute::Encode(Cafe::Io::OutputStream* stream) const
+void OldUniAttribute::Encode(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream) const
 {
 	JceOutputStream output{ stream };
 	output.Write(0, m_Data);
 }
 
-void OldUniAttribute::Decode(Cafe::Io::InputStream* stream)
+void OldUniAttribute::Decode(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream)
 {
 	JceInputStream input{ stream };
 	m_Data.clear();
@@ -40,35 +40,33 @@ UniPacket::UniPacket() : m_OldRespIRet{}
 {
 }
 
-void UniPacket::Encode(Cafe::Io::OutputStream* stream)
+void UniPacket::Encode(Cafe::Io::SeekableStream<Cafe::Io::OutputStream>* stream)
 {
 	MemoryStream tmpBuffer;
 	m_UniAttribute.Encode(&tmpBuffer);
 	const auto buffer = tmpBuffer.GetInternalStorage();
 	m_RequestPacket.GetsBuffer().assign(buffer.data(), buffer.data() + buffer.size());
 
-	Cafe::Io::BinaryWriter writer{ stream, std::endian::little };
+	Cafe::Io::BinaryWriter<Cafe::Io::SeekableStream<Cafe::Io::OutputStream>> writer{
+		stream, std::endian::little
+	};
 
-	const auto underlyingStream = dynamic_cast<SeekableStreamBase*>(stream);
-	assert(underlyingStream);
-	const auto sizePos = underlyingStream->GetPosition();
+	const auto sizePos = stream->GetPosition();
 	// 占位 4 字节以便之后返回写入长度信息
 	writer.Write(std::uint32_t{});
 
 	JceOutputStream os{ stream };
 	os.Write(0, m_RequestPacket);
-	const auto endPos = underlyingStream->GetPosition();
+	const auto endPos = stream->GetPosition();
 	const auto length = endPos - sizePos;
-	underlyingStream->SeekFromBegin(sizePos);
+	stream->SeekFromBegin(sizePos);
 	writer.Write(static_cast<std::int32_t>(length));
-	underlyingStream->SeekFromBegin(endPos);
+	stream->SeekFromBegin(endPos);
 }
 
-void UniPacket::Decode(Cafe::Io::InputStream* stream)
+void UniPacket::Decode(Cafe::Io::SeekableStream<Cafe::Io::InputStream>* stream)
 {
-	const auto underlyingStream = dynamic_cast<SeekableStreamBase*>(stream);
-	assert(underlyingStream);
-	underlyingStream->Seek(SeekOrigin::Current, 4);
+	stream->Seek(SeekOrigin::Current, 4);
 	JceInputStream is{ stream };
 	if (!is.Read(0, m_RequestPacket))
 	{
@@ -76,7 +74,8 @@ void UniPacket::Decode(Cafe::Io::InputStream* stream)
 	}
 
 	const auto& buffer = m_RequestPacket.GetsBuffer();
-	ExternalMemoryInputStream bufferStream{ gsl::as_bytes(gsl::make_span(buffer.data(), buffer.size())) };
+	ExternalMemoryInputStream bufferStream{ gsl::as_bytes(
+		  gsl::make_span(buffer.data(), buffer.size())) };
 	m_UniAttribute.Decode(&bufferStream);
 }
 

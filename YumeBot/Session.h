@@ -84,7 +84,7 @@ namespace YumeBot
 			{
 				Cafe::Io::MemoryStream stream;
 				// TODO
-				m_RequestBuilder.WriteRequest(stream, Request::RequestTGTGT{});
+				m_RequestBuilder.WriteRequest(&stream, Request::RequestTGTGT{});
 				m_Socket.PushData(stream.GetInternalStorage());
 
 				// TODO: 验证 Response
